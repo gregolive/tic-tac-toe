@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;800&display=swap');
 
 :root {
   --bg-color: #121213;
@@ -18,7 +18,7 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: clamp(400px, 40vw, 100vw);
+  width: clamp(320px, 100vw, 540px);
   margin: 0 auto;
   max-height: calc(100vh - 3rem);
 }
@@ -37,12 +37,14 @@ h1 {
   flex: 1;
   display: grid;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .game-board {
   background-color: var(--border-color);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
   gap: 0.25rem;
   padding: 0.25rem;
   aspect-ratio: 1;
@@ -50,11 +52,17 @@ h1 {
 
 .board-cell {
   background-color: var(--bg-color);
-  font-size: 4rem;
+  font-size: 6rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+.dialog-box {
+  font-size: 1.2rem;
+  text-align: center;
 }
 
 footer {
