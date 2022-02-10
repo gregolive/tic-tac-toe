@@ -20,7 +20,7 @@ main {
   justify-content: center;
   width: clamp(320px, 100vw, 540px);
   margin: 0 auto;
-  max-height: calc(100vh - 3rem);
+  min-height: calc(100vh - 3rem);
 }
 
 h1 {
@@ -62,6 +62,7 @@ h1 {
 
 .dialog-box {
   font-size: 1.2rem;
+  margin: 1rem 0;
   text-align: center;
 }
 

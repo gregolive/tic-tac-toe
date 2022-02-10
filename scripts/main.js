@@ -1,20 +1,41 @@
 // PLAYER FACTORY
-const Player = (mark) => {
+const Player = (name, marker) => {
+  const getName = name;
+  const getMarker = marker;
 
+  return { getName, getMarker }
 };
 
 
 // GAME BOARD MODULE
 const gameBoard = (() => {
   let boardArray = ['','','','','','','','',''];
+  const players = [Player('Bob', 'X'), Player('John', 'O')];
+  let turn = Math.floor(Math.random()*2);
 
   function updateBoard(index, marker) {
     boardArray[index] = marker;
   }
 
+  function getCurrentPlayer() {
+    const currentPlayer = players[turn];
+    return currentPlayer;
+  }
+
+  function checkWinner() {
+    _playTurn();
+    return false;
+  }
+
+  function _playTurn() {
+    turn = (turn === 0) ? 1 : 0;
+  }
+
   return {
-    boardArray : boardArray,
-    updateBoard : updateBoard
+    boardArray: boardArray,
+    updateBoard: updateBoard,
+    getCurrentPlayer: getCurrentPlayer,
+    checkWinner, checkWinner
   }
 })();
 
@@ -30,14 +51,19 @@ const displayController = (() => {
 
   // bind events
   boardCells.forEach(cell => {
-    cell.addEventListener('click', e => { checkMove(e.target) });
+    cell.addEventListener('click', e => { _makeMove(e.target) });
   });
 
   _render();
 
   // functions
   function _render() {
+    _displayTurn(gameBoard.getCurrentPlayer());
     _buildBoard();
+  }
+
+  function _displayTurn(player) {
+    dialogBox.textContent = `${player.getName}'s turn.`;
   }
 
   function _buildBoard() {
@@ -52,19 +78,26 @@ const displayController = (() => {
     cell.textContent = gameBoard.boardArray[i];
   }
 
-  function checkMove(cell) {
+  function _makeMove(cell) {
+    const player = gameBoard.getCurrentPlayer();
+    if (_checkMove(cell, player) === false) { return };
+    _addMarker(cell, player);
+    _initNextTurn();
+    _render();
+  }
+
+  function _checkMove(cell, player) {
     if (cell.textContent === '') {
-      _addMarker(cell)
+      return true;
     } else {
-      dialogBox.textContent = "You can't play here!"
+      dialogBox.textContent = `Woah ${player.getName}! You can't play here.`;
+      return false;
     }
   }
 
-  function _addMarker(cell) {
-      const marker = 'X';
-      const index = _findIndex(cell);
-      gameBoard.updateBoard(index, marker);
-      _render(); 
+  function _addMarker(cell, player) {
+    const index = _findIndex(cell);
+    gameBoard.updateBoard(index, player.getMarker);
   }
 
   function _findIndex(cell) {
@@ -72,7 +105,11 @@ const displayController = (() => {
     return i;
   }
 
-  return {
-    checkMove: checkMove
-  };
+  function _initNextTurn() {
+    if (gameBoard.checkWinner() === true) {
+
+    } else {
+      
+    }
+  }
 })();
