@@ -10,6 +10,11 @@ const Player = (name, marker) => {
 // GAME BOARD MODULE
 const gameBoard = (() => {
   let boardArray = ['','','','','','','','',''];
+  const winningCombos = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
+    [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
+  ];
+
   const players = [Player('Bob', 'X'), Player('John', 'O')];
   let turn = Math.floor(Math.random()*2);
 
@@ -22,13 +27,37 @@ const gameBoard = (() => {
     return currentPlayer;
   }
 
-  function checkWinner() {
-    _playTurn();
-    return false;
-  }
-
   function _playTurn() {
     turn = (turn === 0) ? 1 : 0;
+  }
+
+  function checkWinner() {
+    let winner = false;
+    winningCombos.forEach(combo => {
+      let array = [boardArray[combo[0]], boardArray[combo[1]], boardArray[combo[2]]];
+      if (_allSame(array) && _allFilled(array)) {
+        winner = true;
+      }
+    });
+    if (winner === false) { _playTurn() };
+    return winner;
+  }
+
+  function _allSame(array) {
+    for (var i = 0; i < array.length - 1; i++) {
+      if (array[i] !== array[i+1]) { 
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function _allFilled(array) {
+    let i = 0;
+    array.forEach(cell => {
+      if (cell === '') { i++; }
+    });
+    return (i === 0) ? true : false;
   }
 
   return {
@@ -44,6 +73,8 @@ const gameBoard = (() => {
 
 // DISPLAY CONTROLLER MODULE
 const displayController = (() => {
+  let gameover = false;
+
   // DOM elements
   const board = document.querySelector('.game-board');
   const boardCells = Array.from(document.querySelectorAll('.board-cell'));
@@ -58,12 +89,16 @@ const displayController = (() => {
 
   // functions
   function _render() {
-    _displayTurn(gameBoard.getCurrentPlayer());
+    _updateDialogBox(gameBoard.getCurrentPlayer());
     _buildBoard();
   }
 
-  function _displayTurn(player) {
-    dialogBox.textContent = `${player.getName}'s turn.`;
+  function _updateDialogBox(player) {
+    if (gameover === false) {
+      dialogBox.textContent = `${player.getName}'s turn.`;
+    } else {
+      dialogBox.textContent = `${player.getName} wins!`;
+    }
   }
 
   function _buildBoard() {
@@ -82,7 +117,7 @@ const displayController = (() => {
     const player = gameBoard.getCurrentPlayer();
     if (_checkMove(cell, player) === false) { return };
     _addMarker(cell, player);
-    _initNextTurn();
+    _boardWinner();
     _render();
   }
 
@@ -105,11 +140,14 @@ const displayController = (() => {
     return i;
   }
 
-  function _initNextTurn() {
+  function _boardWinner() {
     if (gameBoard.checkWinner() === true) {
-
+      gameover = true;
+      // remove eventListeners
+      // add play again button (or modal)
+      return true;
     } else {
-      
+      return false;
     }
   }
 })();
