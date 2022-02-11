@@ -41,18 +41,17 @@ const gameBoard = (() => {
   function _playTurn() {
     turnOrder = (turnOrder === 0) ? 1 : 0;
     turn++;
-    console.log(turn);
   }
 
   function checkWinner() {
-    let winner = false;
+    let winner = null;
     winningCombos.forEach(combo => {
       let array = [boardArray[combo[0]], boardArray[combo[1]], boardArray[combo[2]]];
       if (_allSame(array) && _allFilled(array)) {
-        winner = true;
+        winner = combo;
       }
     });
-    if (winner === false) { _playTurn(); }
+    if (winner === null) { _playTurn(); }
     return winner;
   }
 
@@ -140,7 +139,7 @@ const modalController = (() => {
 // DISPLAY CONTROLLER MODULE
 const displayController = (() => {
   let gameover = false;
-  let winner = false;
+  let winner = null;
 
   // DOM elements
   const board = document.querySelector('.game-board');
@@ -166,7 +165,7 @@ const displayController = (() => {
     if (gameover === false) {
       _displayNextTurn(player);
     } else {
-      if (winner === false) {
+      if (winner === null) {
         _displayTie();
       } else {
         _displayWinner(player);
@@ -186,7 +185,21 @@ const displayController = (() => {
   function _displayWinner(player) {
     dialogBox.textContent = `${player.getName} wins! `;
     dialogBox.appendChild(replayLink);
+    _colorWinningMarkers();
   }
+
+  function _colorWinningMarkers() {
+    winner.forEach(cell =>{
+      boardCells[cell].classList.add("text-danger");
+      _flip(boardCells[cell]);
+    })
+  }
+
+  function _flip(el) {
+    console.log(el);
+    el.style.transform = "rotatey(" + 180 + "deg)";
+    el.style.transitionDuration = "0.5s"
+}
 
   function _buildBoard() {
     let i = 0;
@@ -228,11 +241,8 @@ const displayController = (() => {
   }
 
   function _checkGameOver() {
-    if (gameBoard.checkWinner() === true) {
-      winner = true;
-      gameover = true;
-      _removeEventListeners();
-    } else if (gameBoard.getTurn() === 9) {
+    winner = gameBoard.checkWinner();
+    if (winner !== null || gameBoard.getTurn() === 9) {
       gameover = true;
       _removeEventListeners();
     }
