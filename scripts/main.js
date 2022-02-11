@@ -6,6 +6,43 @@ const Player = (name, marker) => {
   return { getName, getMarker }
 };
 
+// MODAL CONTROLLER MODULE
+const modalController = (() => {
+  // DOM elements
+  const modal = document.querySelector(".modal");
+  const form = document.querySelector(".game-form");
+  const playerOneName = document.querySelector("#player1");
+  const playerOneMarker = document.querySelector("#player1-marker");
+  const playerTwoName = document.querySelector("#player2");
+  const playerTwoMarker = document.querySelector("#player2-marker");
+
+  // bind events
+  form.addEventListener('submit', _playGame);
+
+  _render();
+
+  // functions
+  function _render() {
+    modal.style.display = 'flex';
+  }
+
+  function _playGame(e) {
+    _closeModal();
+    gameBoard.buildPlayers();
+    displayController.render();
+    e.preventDefault(); // stop refresh
+  }
+
+  function setPlayers() {
+    return [[playerOneName.value, playerOneMarker.value], [playerTwoName.value, playerTwoMarker.value]]
+  }
+
+  function _closeModal() {
+    modal.style.display = 'none';
+  }
+
+  return { setPlayers: setPlayers }
+})();
 
 // GAME BOARD MODULE
 const gameBoard = (() => {
@@ -15,8 +52,16 @@ const gameBoard = (() => {
     [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
   ];
 
-  const players = [Player('Bob', 'X'), Player('John', 'O')];
+  const players = buildPlayers();
   let turn = Math.floor(Math.random()*2);
+
+  function buildPlayers() {
+    const players = modalController.setPlayers();
+    const player1 = Player(players[0][0], players[0][1]);
+    const player2 = Player(players[1][0], players[1][1]);
+    console.log(player1);
+    return [player1, player2]
+  }
 
   function updateBoard(index, marker) {
     boardArray[index] = marker;
@@ -62,14 +107,12 @@ const gameBoard = (() => {
 
   return {
     boardArray: boardArray,
+    buildPlayers: buildPlayers,
     updateBoard: updateBoard,
     getCurrentPlayer: getCurrentPlayer,
-    checkWinner, checkWinner
+    checkWinner: checkWinner
   }
 })();
-
-
-
 
 // DISPLAY CONTROLLER MODULE
 const displayController = (() => {
@@ -85,10 +128,8 @@ const displayController = (() => {
     cell.addEventListener('click', _makeMove);
   });
 
-  _render();
-
   // functions
-  function _render() {
+  function render() {
     _updateDialogBox();
     _buildBoard();
   }
@@ -132,7 +173,7 @@ const displayController = (() => {
     if (_checkMove(e.target, player) === false) { return };
     _addMarker(e.target, player);
     _boardWinner();
-    _render();
+    render();
   }
 
   function _checkMove(cell, player) {
@@ -158,10 +199,6 @@ const displayController = (() => {
     if (gameBoard.checkWinner() === true) {
       gameover = true;
       _removeEventListeners();
-      // add play again button (or modal)
-      return true;
-    } else {
-      return false;
     }
   }
 
@@ -170,4 +207,6 @@ const displayController = (() => {
       cell.removeEventListener('click', _makeMove);
     });
   }
+
+  return { render: render }
 })();
