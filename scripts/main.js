@@ -6,44 +6,6 @@ const Player = (name, marker) => {
   return { getName, getMarker }
 };
 
-// MODAL CONTROLLER MODULE
-const modalController = (() => {
-  // DOM elements
-  const modal = document.querySelector(".modal");
-  const form = document.querySelector(".game-form");
-  const playerOneName = document.querySelector("#player1");
-  const playerOneMarker = document.querySelector("#player1-marker");
-  const playerTwoName = document.querySelector("#player2");
-  const playerTwoMarker = document.querySelector("#player2-marker");
-
-  // bind events
-  form.addEventListener('submit', _playGame);
-
-  _render();
-
-  // functions
-  function _render() {
-    modal.style.display = 'flex';
-  }
-
-  function _playGame(e) {
-    _closeModal();
-    gameBoard.buildPlayers();
-    displayController.render();
-    e.preventDefault(); // stop refresh
-  }
-
-  function setPlayers() {
-    return [[playerOneName.value, playerOneMarker.value], [playerTwoName.value, playerTwoMarker.value]]
-  }
-
-  function _closeModal() {
-    modal.style.display = 'none';
-  }
-
-  return { setPlayers: setPlayers }
-})();
-
 // GAME BOARD MODULE
 const gameBoard = (() => {
   let boardArray = ['','','','','','','','',''];
@@ -51,16 +13,19 @@ const gameBoard = (() => {
     [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
     [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
   ];
-
-  const players = buildPlayers();
+  let players = [];
   let turn = Math.floor(Math.random()*2);
 
-  function buildPlayers() {
+  // functions
+  function render() {
+    players = _buildPlayers();
+  }
+
+  function _buildPlayers() {
     const players = modalController.setPlayers();
     const player1 = Player(players[0][0], players[0][1]);
     const player2 = Player(players[1][0], players[1][1]);
-    console.log(player1);
-    return [player1, player2]
+    return [player1, player2];
   }
 
   function updateBoard(index, marker) {
@@ -107,11 +72,60 @@ const gameBoard = (() => {
 
   return {
     boardArray: boardArray,
-    buildPlayers: buildPlayers,
+    render: render,
     updateBoard: updateBoard,
     getCurrentPlayer: getCurrentPlayer,
     checkWinner: checkWinner
   }
+})();
+
+// MODAL CONTROLLER MODULE
+const modalController = (() => {
+  // DOM elements
+  const modal = document.querySelector('.modal');
+  const form = document.querySelector('.game-form');
+  const playerOneName = document.querySelector('#player1');
+  const playerOneMarker = document.querySelector('#player1-marker');
+  const playerTwoName = document.querySelector('#player2');
+  const playerTwoMarker = document.querySelector('#player2-marker');
+  const feedback = document.querySelector('.invalid-feedback');
+
+  // bind events
+  form.addEventListener('submit', _playGame);
+
+  _render();
+
+  // functions
+  function _render() {
+    modal.style.display = 'flex';
+  }
+
+  function _playGame(e) {
+    e.preventDefault(); // stop refresh
+    if (!_verifyInputs()) { return; }
+    _closeModal();
+    gameBoard.render();
+    displayController.render();
+  }
+
+  function _verifyInputs() {
+    if (playerOneMarker.value === playerTwoMarker.value) {
+      feedback.style.display = 'block';
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  function setPlayers() {
+    return [[playerOneName.value, playerOneMarker.value], [playerTwoName.value, playerTwoMarker.value]]
+  }
+
+  function _closeModal() {
+    modal.style.display = 'none';
+  }
+
+  return { setPlayers: setPlayers }
 })();
 
 // DISPLAY CONTROLLER MODULE
@@ -144,6 +158,7 @@ const displayController = (() => {
   }
 
   function _displayNextTurn(player) {
+    console.log(player)
     dialogBox.textContent = `${player.getName}'s turn.`;
   }
 
@@ -170,13 +185,13 @@ const displayController = (() => {
 
   function _makeMove(e) {
     const player = gameBoard.getCurrentPlayer();
-    if (_checkMove(e.target, player) === false) { return };
+    if (_verifyMove(e.target, player) === false) { return; }
     _addMarker(e.target, player);
     _boardWinner();
     render();
   }
 
-  function _checkMove(cell, player) {
+  function _verifyMove(cell, player) {
     if (cell.textContent === '') {
       return true;
     } else {
