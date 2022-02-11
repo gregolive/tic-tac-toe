@@ -14,7 +14,8 @@ const gameBoard = (() => {
     [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
   ];
   let players = [];
-  let turn = Math.floor(Math.random()*2);
+  let turn = 0;
+  let turnOrder = Math.floor(Math.random()*2);
 
   // functions
   function render() {
@@ -33,12 +34,14 @@ const gameBoard = (() => {
   }
 
   function getCurrentPlayer() {
-    const currentPlayer = players[turn];
+    const currentPlayer = players[turnOrder];
     return currentPlayer;
   }
 
   function _playTurn() {
-    turn = (turn === 0) ? 1 : 0;
+    turnOrder = (turnOrder === 0) ? 1 : 0;
+    turn++;
+    console.log(turn);
   }
 
   function checkWinner() {
@@ -49,7 +52,7 @@ const gameBoard = (() => {
         winner = true;
       }
     });
-    if (winner === false) { _playTurn() };
+    if (winner === false) { _playTurn(); }
     return winner;
   }
 
@@ -70,12 +73,17 @@ const gameBoard = (() => {
     return (i === 0) ? true : false;
   }
 
+  function getTurn() {
+    return turn;
+  }
+
   return {
     boardArray: boardArray,
     render: render,
     updateBoard: updateBoard,
     getCurrentPlayer: getCurrentPlayer,
-    checkWinner: checkWinner
+    checkWinner: checkWinner,
+    getTurn, getTurn
   }
 })();
 
@@ -118,7 +126,8 @@ const modalController = (() => {
   }
 
   function setPlayers() {
-    return [[playerOneName.value, playerOneMarker.value], [playerTwoName.value, playerTwoMarker.value]]
+    return [[playerOneName.value, playerOneMarker.value.toUpperCase()], 
+            [playerTwoName.value, playerTwoMarker.value.toUpperCase()]];
   }
 
   function _closeModal() {
@@ -131,11 +140,15 @@ const modalController = (() => {
 // DISPLAY CONTROLLER MODULE
 const displayController = (() => {
   let gameover = false;
+  let winner = false;
 
   // DOM elements
   const board = document.querySelector('.game-board');
   const boardCells = Array.from(document.querySelectorAll('.board-cell'));
   const dialogBox = document.querySelector('.dialog-box');
+  const replayLink = document.createElement('a');
+  replayLink.textContent = 'Play again?'
+  replayLink.href = '.';
 
   // bind events
   boardCells.forEach(cell => {
@@ -153,20 +166,24 @@ const displayController = (() => {
     if (gameover === false) {
       _displayNextTurn(player);
     } else {
-      _displayWinner(player);
+      if (winner === false) {
+        _displayTie();
+      } else {
+        _displayWinner(player);
+      }
     }
   }
 
   function _displayNextTurn(player) {
-    console.log(player)
     dialogBox.textContent = `${player.getName}'s turn.`;
   }
 
+  function _displayTie() {
+    dialogBox.textContent = "It's a tie! ";
+    dialogBox.appendChild(replayLink);
+  }
+
   function _displayWinner(player) {
-    const replayLink = document.createElement('a');
-    replayLink.textContent = "Play again?"
-    replayLink.href = ".";
-    
     dialogBox.textContent = `${player.getName} wins! `;
     dialogBox.appendChild(replayLink);
   }
@@ -187,7 +204,7 @@ const displayController = (() => {
     const player = gameBoard.getCurrentPlayer();
     if (_verifyMove(e.target, player) === false) { return; }
     _addMarker(e.target, player);
-    _boardWinner();
+    _checkGameOver();
     render();
   }
 
@@ -210,8 +227,12 @@ const displayController = (() => {
     return i;
   }
 
-  function _boardWinner() {
+  function _checkGameOver() {
     if (gameBoard.checkWinner() === true) {
+      winner = true;
+      gameover = true;
+      _removeEventListeners();
+    } else if (gameBoard.getTurn() === 9) {
       gameover = true;
       _removeEventListeners();
     }
