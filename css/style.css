@@ -23,6 +23,14 @@ main {
   min-height: calc(100vh - 3rem);
 }
 
+main a {
+  color: var(--text-color);
+}
+
+main a:hover {
+  text-decoration: none;
+}
+
 h1 {
   font-size: 2.2rem;
   font-weight: 800;

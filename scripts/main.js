@@ -89,16 +89,30 @@ const displayController = (() => {
 
   // functions
   function _render() {
-    _updateDialogBox(gameBoard.getCurrentPlayer());
+    _updateDialogBox();
     _buildBoard();
   }
 
-  function _updateDialogBox(player) {
+  function _updateDialogBox() {
+    const player = gameBoard.getCurrentPlayer();
     if (gameover === false) {
-      dialogBox.textContent = `${player.getName}'s turn.`;
+      _displayNextTurn(player);
     } else {
-      dialogBox.textContent = `${player.getName} wins!`;
+      _displayWinner(player);
     }
+  }
+
+  function _displayNextTurn(player) {
+    dialogBox.textContent = `${player.getName}'s turn.`;
+  }
+
+  function _displayWinner(player) {
+    const replayLink = document.createElement('a');
+    replayLink.textContent = "Play again?"
+    replayLink.href = ".";
+    
+    dialogBox.textContent = `${player.getName} wins! `;
+    dialogBox.appendChild(replayLink);
   }
 
   function _buildBoard() {
