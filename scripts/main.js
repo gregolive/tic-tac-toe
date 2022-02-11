@@ -91,14 +91,21 @@ const modalController = (() => {
   // DOM elements
   const modal = document.querySelector('.modal');
   const form = document.querySelector('.game-form');
+  const players = document.querySelector('input[name="players"]:checked');
+  const playerCount1 = document.querySelector('#one-player');
+  const playerCount2 = document.querySelector('#two-player');
   const playerOneName = document.querySelector('#player1');
   const playerOneMarker = document.querySelector('#player1-marker');
   const playerTwoName = document.querySelector('#player2');
   const playerTwoMarker = document.querySelector('#player2-marker');
-  const feedback = document.querySelector('.invalid-feedback');
+  const feedback = Array.from(document.querySelectorAll('.invalid-feedback'));
 
   // bind events
   form.addEventListener('submit', _playGame);
+  playerCount1.addEventListener('click', _disablePlayer2Input);
+  playerCount2.addEventListener('click', _enablePlayer2Input);
+
+  let errorCount = 0;
 
   _render();
 
@@ -109,28 +116,73 @@ const modalController = (() => {
 
   function _playGame(e) {
     e.preventDefault(); // stop refresh
-    if (!_verifyInputs()) { return; }
+    if (!_verifyInputs()) { 
+      errorCount = 0;
+      return; 
+    }
     _closeModal();
     gameBoard.render();
     displayController.render();
   }
 
   function _verifyInputs() {
-    if (playerOneMarker.value === playerTwoMarker.value) {
-      feedback.style.display = 'block';
+    _verifyNumberOfPlayers();
+    _verifyPlayer1();
+    _verifyPlayer2();
+    return (errorCount > 0) ? false : true;
+  }
+
+  function _verifyNumberOfPlayers() {
+    if (playerCount1.checked === true || playerCount2.checked === true) {
+      return true;
+    } else {
+      feedback[0].style.display = 'block';
+      errorCount++;
+      return false;
+    } 
+  }
+
+  function _verifyPlayer1() {
+    if (playerOneName.value === '' || playerOneName.value === '') {
+      feedback[1].style.display = 'block';
+      errorCount++;
       return false;
     } else {
       return true;
     }
   }
 
-  function setPlayers() {
-    return [[playerOneName.value, playerOneMarker.value.toUpperCase()], 
-            [playerTwoName.value, playerTwoMarker.value.toUpperCase()]];
+  function _verifyPlayer2() {
+    if (playerOneMarker.value === playerTwoMarker.value) {
+      feedback[2].style.display = 'block';
+      errorCount++;
+      return false;
+    } else {
+      return true;
+    }
   }
 
   function _closeModal() {
     modal.style.display = 'none';
+  }
+
+  function _enablePlayer2Input(e) {
+    if (e.target.checked) {
+      playerTwoName.removeAttribute("disabled");
+      playerTwoMarker.removeAttribute("disabled");
+    }
+  }
+
+  function _disablePlayer2Input(e) {
+    if (e.target.checked) {
+      playerTwoName.setAttribute("disabled", "disabled");
+      playerTwoMarker.setAttribute("disabled", "disabled");
+    }
+  }
+
+  function setPlayers() {
+    return [[playerOneName.value, playerOneMarker.value.toUpperCase()], 
+            [playerTwoName.value, playerTwoMarker.value.toUpperCase()]];
   }
 
   return { setPlayers: setPlayers }

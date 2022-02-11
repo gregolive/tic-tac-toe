@@ -122,6 +122,10 @@ footer a:hover {
   width: clamp(350px, 60vw, 580px);;
 }
 
+.input-group {
+  margin-bottom: 0.5rem;
+}
+
 .form-label {
   font-weight: 600;
 }
