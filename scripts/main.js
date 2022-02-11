@@ -180,15 +180,26 @@ const displayController = (() => {
   function _displayTie() {
     dialogBox.textContent = "It's a tie! ";
     dialogBox.appendChild(replayLink);
+    _animateTiedBoard();
+  }
+
+  function _animateTiedBoard() {
+    boardCells.forEach(cell =>{
+      _shake(cell);
+    })
+  }
+
+  function _shake(el) {
+    el.style.animation = "shake 0.5s";
   }
 
   function _displayWinner(player) {
     dialogBox.textContent = `${player.getName} wins! `;
     dialogBox.appendChild(replayLink);
-    _colorWinningMarkers();
+    _animateWinningMarkers();
   }
 
-  function _colorWinningMarkers() {
+  function _animateWinningMarkers() {
     winner.forEach(cell =>{
       boardCells[cell].classList.add("text-danger");
       _flip(boardCells[cell]);
@@ -196,10 +207,9 @@ const displayController = (() => {
   }
 
   function _flip(el) {
-    console.log(el);
     el.style.transform = "rotatey(" + 180 + "deg)";
-    el.style.transitionDuration = "0.5s"
-}
+    el.style.transitionDuration = "0.5s";
+  }
 
   function _buildBoard() {
     let i = 0;
