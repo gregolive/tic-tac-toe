@@ -207,8 +207,8 @@ const displayController = (() => {
   }
 
   function _flip(el) {
-    el.style.transform = "rotatey(" + 180 + "deg)";
-    el.style.transitionDuration = "0.5s";
+    el.style.transform = "rotatey(" + 360 + "deg)";
+    el.style.transitionDuration = "0.75s";
   }
 
   function _buildBoard() {
