@@ -82,7 +82,7 @@ const displayController = (() => {
 
   // bind events
   boardCells.forEach(cell => {
-    cell.addEventListener('click', e => { _makeMove(e.target) });
+    cell.addEventListener('click', _makeMove);
   });
 
   _render();
@@ -113,10 +113,10 @@ const displayController = (() => {
     cell.textContent = gameBoard.boardArray[i];
   }
 
-  function _makeMove(cell) {
+  function _makeMove(e) {
     const player = gameBoard.getCurrentPlayer();
-    if (_checkMove(cell, player) === false) { return };
-    _addMarker(cell, player);
+    if (_checkMove(e.target, player) === false) { return };
+    _addMarker(e.target, player);
     _boardWinner();
     _render();
   }
@@ -143,11 +143,17 @@ const displayController = (() => {
   function _boardWinner() {
     if (gameBoard.checkWinner() === true) {
       gameover = true;
-      // remove eventListeners
+      _removeEventListeners();
       // add play again button (or modal)
       return true;
     } else {
       return false;
     }
+  }
+
+  function _removeEventListeners() {
+    boardCells.forEach(cell => {
+      cell.removeEventListener('click', _makeMove);
+    });
   }
 })();
