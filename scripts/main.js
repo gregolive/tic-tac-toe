@@ -157,6 +157,7 @@ const modalController = (() => {
 
   function _verifyNumberOfPlayers() {
     if (playerCount1.checked === true || playerCount2.checked === true) {
+      feedback[0].style.display = 'none';
       return true;
     } else {
       feedback[0].style.display = 'block';
@@ -166,21 +167,24 @@ const modalController = (() => {
   }
 
   function _verifyPlayer1() {
-    if (playerOneName.value === '' || playerOneName.value === '') {
+    if (playerOneName.value === '' || playerOneMarker.value === '') {
       feedback[1].style.display = 'block';
       errorCount++;
       return false;
     } else {
+      feedback[1].style.display = 'none';
       return true;
     }
   }
 
   function _verifyPlayer2() {
-    if (playerOneMarker.value === playerTwoMarker.value) {
+    if ((playerCount2.checked === true || playerCount1.checked === false) && 
+        (playerOneMarker.value.toUpperCase() === playerTwoMarker.value.toUpperCase() || playerTwoName.value === '' || playerTwoMarker.value === '')) {
       feedback[2].style.display = 'block';
       errorCount++;
       return false;
     } else {
+      feedback[2].style.display = 'none';
       return true;
     }
   }
@@ -200,6 +204,8 @@ const modalController = (() => {
     if (e.target.checked) {
       playerTwoName.setAttribute("disabled", "disabled");
       playerTwoMarker.setAttribute("disabled", "disabled");
+      playerTwoName.value = "";
+      playerTwoMarker.value = "";
     }
   }
 
