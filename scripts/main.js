@@ -1,9 +1,32 @@
 // PLAYER FACTORY
 const Player = (name, marker) => {
-  const getName = name;
-  const getMarker = marker;
+  let computer = false;
 
-  return { getName, getMarker }
+  const checkPlayer = opponent => {
+    if (obj.name === '') {
+      _setComputer(opponent);
+    }
+  }
+
+  const _setComputer = opponent => {
+    obj.name = (opponent.name === 'Computer') ? 'Computer 2' : 'Computer';
+    obj.marker = (opponent.marker === 'X') ? 'O' : 'X';
+    obj.computer = true;
+  }
+
+  const computerPlayerMove = () => {
+    const board = gameBoard.boardArray;
+    let move = 4;
+    let target = board[move];
+    while (target !== '') {
+      move = Math.floor(Math.random()*board.length);
+      target = board[move];
+    }
+    return move;
+  }
+
+  const obj = { name, marker, computer, checkPlayer, computerPlayerMove };
+  return obj;
 };
 
 // GAME BOARD MODULE
@@ -26,6 +49,7 @@ const gameBoard = (() => {
     const players = modalController.setPlayers();
     const player1 = Player(players[0][0], players[0][1]);
     const player2 = Player(players[1][0], players[1][1]);
+    player2.checkPlayer(player1);
     return [player1, player2];
   }
 
@@ -88,10 +112,11 @@ const gameBoard = (() => {
 
 // MODAL CONTROLLER MODULE
 const modalController = (() => {
+  let errorCount = 0;
+
   // DOM elements
   const modal = document.querySelector('.modal');
   const form = document.querySelector('.game-form');
-  const players = document.querySelector('input[name="players"]:checked');
   const playerCount1 = document.querySelector('#one-player');
   const playerCount2 = document.querySelector('#two-player');
   const playerOneName = document.querySelector('#player1');
@@ -103,9 +128,7 @@ const modalController = (() => {
   // bind events
   form.addEventListener('submit', _playGame);
   playerCount1.addEventListener('click', _disablePlayer2Input);
-  playerCount2.addEventListener('click', _enablePlayer2Input);
-
-  let errorCount = 0;
+  playerCount2.addEventListener('click', _enablePlayer2Input)
 
   _render();
 
@@ -194,7 +217,6 @@ const displayController = (() => {
   let winner = null;
 
   // DOM elements
-  const board = document.querySelector('.game-board');
   const boardCells = Array.from(document.querySelectorAll('.board-cell'));
   const dialogBox = document.querySelector('.dialog-box');
   const replayLink = document.createElement('a');
@@ -203,13 +225,14 @@ const displayController = (() => {
 
   // bind events
   boardCells.forEach(cell => {
-    cell.addEventListener('click', _makeMove);
+    cell.addEventListener('click', _playerMove);
   });
 
   // functions
   function render() {
     _updateDialogBox();
     _buildBoard();
+    if (gameover === false) { _checkPlayer(); }
   }
 
   function _updateDialogBox() {
@@ -226,7 +249,7 @@ const displayController = (() => {
   }
 
   function _displayNextTurn(player) {
-    dialogBox.textContent = `${player.getName}'s turn.`;
+    dialogBox.textContent = `${player.name}'s turn.`;
   }
 
   function _displayTie() {
@@ -246,7 +269,7 @@ const displayController = (() => {
   }
 
   function _displayWinner(player) {
-    dialogBox.textContent = `${player.getName} wins! `;
+    dialogBox.textContent = `${player.name} wins! `;
     dialogBox.appendChild(replayLink);
     _animateWinningMarkers();
   }
@@ -275,7 +298,7 @@ const displayController = (() => {
     cell.textContent = gameBoard.boardArray[i];
   }
 
-  function _makeMove(e) {
+  function _playerMove(e) {
     const player = gameBoard.getCurrentPlayer();
     if (_verifyMove(e.target, player) === false) { return; }
     _addMarker(e.target, player);
@@ -287,19 +310,35 @@ const displayController = (() => {
     if (cell.textContent === '') {
       return true;
     } else {
-      dialogBox.textContent = `Woah ${player.getName}! You can't play here.`;
+      dialogBox.textContent = `Woah ${player.name}! You can't play here.`;
       return false;
     }
   }
 
   function _addMarker(cell, player) {
     const index = _findIndex(cell);
-    gameBoard.updateBoard(index, player.getMarker);
+    console.log(index);
+    gameBoard.updateBoard(index, player.marker);
   }
 
   function _findIndex(cell) {
     for (var i = 0; cell = cell.previousElementSibling; i++);
     return i;
+  }
+
+  function _checkPlayer() {
+    const player = gameBoard.getCurrentPlayer();
+    if (player.computer === true) {
+      _computerMove(player);
+    }
+  }
+
+  function _computerMove(player) {
+    const move = player.computerPlayerMove();
+    console.log(move);
+    gameBoard.updateBoard(move, player.marker);
+    _checkGameOver();
+    render();
   }
 
   function _checkGameOver() {
@@ -312,7 +351,7 @@ const displayController = (() => {
 
   function _removeEventListeners() {
     boardCells.forEach(cell => {
-      cell.removeEventListener('click', _makeMove);
+      cell.removeEventListener('click', _playerMove);
     });
   }
 
